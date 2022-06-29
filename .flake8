@@ -1,0 +1,5 @@
+[flake8]
+    ignore = D203,E201,E202,E203,E211,E261,E265,W503,F401,B007
+    exclude = .git,__pycache__,logs/,migrations/,__init__.py, v/, env/, venv/
+    max-complexity = 25
+    max_line_length = 120
