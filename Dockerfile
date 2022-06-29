@@ -19,4 +19,3 @@ COPY requirements.txt /code/
 RUN pip install -r requirements.txt
 RUN pip install psycopg2
 COPY . /code/
-RUN chmod -R 777 /code/
