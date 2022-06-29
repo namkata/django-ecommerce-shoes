@@ -2,7 +2,7 @@ import enum
 
 from core.models import AuditMixin
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -59,7 +59,7 @@ class EmployeePosition(enum.Enum):
 
 
 @enum.unique
-class AreaMgmt(enum.Enum):
+class AreaMgm(enum.Enum):
     Northern = "Northern"  # bac
     NCentral = "Northern Central"
     SCentral = "South Central"
@@ -80,7 +80,7 @@ class EmployeePermission(AuditMixin):
         max_length=100,
         null=True,
         blank=True,
-        choices=((tag.value, tag.name) for tag in AreaMgmt),
+        choices=((tag.value, tag.name) for tag in AreaMgm),
     )
 
     class Meta:
@@ -98,8 +98,9 @@ def contract_directory_path(instance, filename):
 
 class EmploymentContract(AuditMixin):
     account = models.OneToOneField(Account, on_delete=models.CASCADE, related_name="employment_contract")
-    contract = models.FileField(upload_to=contract_directory_path, null=True)
-    is_quit = models.BooleanField(_("Is Quited"), default=False)
+    contract = models.FileField(_("contact files"), upload_to=contract_directory_path, null=True)
+    price = models.IntegerField(_("wage"), default=0, validators=[MinValueValidator(0), MaxValueValidator(100000000)])
+    is_quit = models.BooleanField(_("Is Quieted"), default=False)
 
     class Meta:
         verbose_name = _("Employment Contract")
