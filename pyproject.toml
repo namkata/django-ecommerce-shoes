@@ -8,4 +8,4 @@ multi_line_output = 3
 line_length = 120
 default_section = "THIRDPARTY"
 known_first_party = []
-known_third_party = ["AccountMgmt", "core", "django", "environ"]
+known_third_party = ["AccountMgmt", "core", "django", "environ", "rest_framework_simplejwt"]

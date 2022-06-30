@@ -1,3 +1,5 @@
+import enum
+
 from core.models import AuditMixin
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -24,3 +26,26 @@ class Category(AuditMixin):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+
+@enum.unique
+class AppItem(enum.Enum):
+    Web = "Website"
+    App = "Application"
+    Mobile = "Mobile"
+    WebAdmin = "Website Administraion"
+    MobileDilivery = "Mobile Dilivery"
+
+
+class MenuConfigure(AuditMixin):
+    name = models.CharField(_("name"), max_length=255)
+    slug = models.CharField(_("splug"), max_length=255)
+    app = models.CharField(
+        _("app"), max_length=150, default=AppItem.Web.value, choices=((tag.value, tag.name) for tag in AppItem)
+    )
+    active = models.BooleanField(_("active"), default=True)
+
+    class Meta:
+        verbose_name = _("Menu")
+        verbose_name_plural = _("Menu Categories")
+        order = ("-app",)

@@ -1,3 +1,6 @@
-from django.shortcuts import render
+from AccountMgmt.serializers import ShoesTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenObtainSlidingView, TokenRefreshView
 
-# Create your views here.
+
+class ShoesTokenView(TokenObtainPairView):
+    serializer_class = ShoesTokenObtainPairSerializer

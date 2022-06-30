@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -24,6 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, True),
     SECRET_KEY=(str, "foo"),
+    # DATABASE_URL=(str, "sqlite:////tmp/my-tmp-sqlite.db")
 )
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
@@ -47,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "AccountMgmt",
     "rest_framework",
+    "rest_framework_simplejwt",
 ]
 
 MIDDLEWARE = [
@@ -111,9 +114,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "vi-en"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Ho_Chi_Minh"
 
 USE_I18N = True
 
@@ -131,3 +134,29 @@ STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Configure REST_FRAMEWORK
+REST_FRAMEWORK = {"DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",)}
+
+TOKEN_LIFE_TIME = timedelta(minutes=30)
+REFRESH_LIFE_TIME = timedelta(days=30)
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": TOKEN_LIFE_TIME,
+    "REFRESH_TOKEN_LIFETIME": REFRESH_LIFE_TIME,
+    "UPDATE_LAST_LOGIN": True,
+    "ALGORITHM": "HS384",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+    "JTI_CLAIM": "jti",
+    # 'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    # 'SLIDING_TOKEN_LIFETIME': TOKEN_LIFE_TIME,
+    # 'SLIDING_TOKEN_REFRESH_LIFETIME': REFRESH_LIFE_TIME,
+}
