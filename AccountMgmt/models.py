@@ -29,7 +29,6 @@ class Account(AbstractUser):
     class Meta:
         verbose_name = _("Account")
         verbose_name_plural = _("Accounts")
-        # abstract = True    # only for abstract model :v
 
 
 class Account2FA(AuditMixin):
@@ -108,3 +107,17 @@ class EmploymentContract(AuditMixin):
 
     def __str__(self):
         return f"{self.account.get_full_name}-permission"
+
+
+class StoreLogin(AuditMixin):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="account_store")
+    invocation_id = models.CharField(_("invocation id"), max_length=255)
+    gmd_session = models.CharField(_("GDMSESSION"), max_length=255)
+    active = models.BooleanField(_("active"), default=True)
+
+    class Meta:
+        verbose_name = _("Device Account")
+        verbose_name_plural = _("Device Accounts")
+
+    def __str__(self):
+        return f"{self.account.get_full_name}-logged-in-ip-{self.invocation_id}-{self.gmd_session}"
