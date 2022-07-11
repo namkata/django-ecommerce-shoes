@@ -1,5 +1,7 @@
+from AccountMgmt.authentication import AccountAuthentication
 from AccountMgmt.serializers import ShoesTokenObtainPairSerializer
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
@@ -24,4 +26,6 @@ class ShoesTokenView(TokenObtainPairView):
 
 
 class ShoesRefreshToken(TokenRefreshView):
+    authentication_classes = [AccountAuthentication]
+    permission_classes = [IsAuthenticated]
     pass

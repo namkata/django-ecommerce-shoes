@@ -141,8 +141,8 @@ EXPIRE_DATE = datetime.now() + settings.REFRESH_LIFE_TIME
 
 
 class HistoryRefreshToken(AuditMixin):
-    store = models.ForeignKey(StoreLogin, on_delete=models.CASCADE, related_name="store_refresh_token")
-    refresh_token = models.CharField(_("refresh token"), max_length=300)
+    store = models.OneToOneField(StoreLogin, on_delete=models.CASCADE, related_name="store_refresh_token")
+    refresh_token = models.TextField(_("refresh token"))
     expire_date = models.DateTimeField(_("expire date"), default=EXPIRE_DATE)
 
     class Meta:
@@ -157,20 +157,16 @@ class HistoryRefreshToken(AuditMixin):
         return datetime.now().timestamp() > self.expire_date.timestamp()
 
 
-EXPIRE_DATE_ACCESS = datetime.now() + settings.TOKEN_LIFE_TIME
-
-
 class HistoryAccessToken(AuditMixin):
     refresh = models.ForeignKey(HistoryRefreshToken, on_delete=models.CASCADE, related_name="store_access")
-    access_token = models.CharField(_("access token"), max_length=300)
-    expire_date = models.DateTimeField(_("expire date"), default=EXPIRE_DATE_ACCESS)
+    access_token = models.TextField(_("access token"))
 
     class Meta:
-        verbose_name = _("History Refresh Token")
-        verbose_name_plural = _("History Refresh Token Managements")
+        verbose_name = _("History Access Token")
+        verbose_name_plural = _("History Access Token Managements")
 
     def __str__(self):
-        return f"{self.store.account.first_name}-{self.store.account.last_name}: refresh token"
+        return f"{self.refresh.store.account.first_name}-{self.refresh.store.account.last_name}: refresh token"
 
     @property
     def is_expired(self):

@@ -1,12 +1,10 @@
+from copy import deepcopy
+
 from AccountMgmt.models import HistoryAccessToken, HistoryRefreshToken, StoreLogin
 from django.conf import settings
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.serializers import (
-    TokenObtainPairSerializer,
-    TokenObtainSlidingSerializer,
-    TokenRefreshSerializer,
-)
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 
 class ShoesTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -22,22 +20,15 @@ class ShoesTokenObtainPairSerializer(TokenObtainPairSerializer):
             )
             res = super().get_token(user)
             refresh = HistoryRefreshToken.objects.create(store=store_login, refresh_token=res)
-            HistoryAccessToken.objects.create(refresh=refresh, access_token=res.access_token)
             return res
 
         refresh = HistoryRefreshToken.objects.get(store=store_sign)
-        access = HistoryAccessToken.objects.filter(refresh=refresh).last()
         if refresh.is_expired:
             res = RefreshToken().for_user(user)
             refresh.refresh_token = res
             refresh.save()
-            access.access_token = res.access_token
-            access.save()
             return res
-
         res = self.token_class(refresh.refresh_token)
-        access.access_token = res.access_token
-        access.save()
         return res
 
     def validate(self, attrs):
@@ -50,6 +41,14 @@ class ShoesTokenObtainPairSerializer(TokenObtainPairSerializer):
         phone = "Unknown"
         if self.user.phone:
             phone = self.user.phone[:3] + "*" * 5 + self.user.phone[-4:]
+
+        access = HistoryAccessToken.objects.filter(refresh__refresh_token=data["refresh"]).first()
+        if not access:
+            HistoryAccessToken.objects.create(refresh__refresh_token=data["refresh"], access_token=data["access"])
+
+        access.access_token = data["access"]
+        access.save()
+
         result = {
             "message": "Success",
             "data": {

@@ -114,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = "vi-en"
+LANGUAGE_CODE = "en-vi"
 
 TIME_ZONE = "Asia/Ho_Chi_Minh"
 
@@ -136,7 +136,7 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Configure REST_FRAMEWORK
-REST_FRAMEWORK = {"DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",)}
+REST_FRAMEWORK = {"DEFAULT_AUTHENTICATION_CLASSES": ("AccountMgmt.authentication.AccountAuthentication")}
 
 TOKEN_LIFE_TIME = timedelta(minutes=30)
 REFRESH_LIFE_TIME = timedelta(days=30)
