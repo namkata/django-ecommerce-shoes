@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 class ShoesTokenView(TokenObtainPairView):
@@ -21,3 +21,7 @@ class ShoesTokenView(TokenObtainPairView):
             raise InvalidToken(e.args[0])
 
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+
+class ShoesRefreshToken(TokenRefreshView):
+    pass
