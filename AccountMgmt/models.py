@@ -1,6 +1,8 @@
 import enum
+from datetime import datetime
 
 from core.models import AuditMixin
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
@@ -121,3 +123,55 @@ class StoreLogin(AuditMixin):
 
     def __str__(self):
         return f"{self.account.get_full_name}-logged-in-ip-{self.invocation_id}-{self.gmd_session}"
+
+
+class HistoryPassword(AuditMixin):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="account_passwords")
+    password_hash = models.CharField(_("descryption hash"), max_length=255)
+
+    class Meta:
+        verbose_name = _("History Password")
+        verbose_name_plural = _("History Password Managements")
+
+    def __str__(self):
+        return f"{self.account.first_name}-{self.account.last_name}"
+
+
+EXPIRE_DATE = datetime.now() + settings.REFRESH_LIFE_TIME
+
+
+class HistoryRefreshToken(AuditMixin):
+    store = models.ForeignKey(StoreLogin, on_delete=models.CASCADE, related_name="store_refresh_token")
+    refresh_token = models.CharField(_("refresh token"), max_length=300)
+    expire_date = models.DateTimeField(_("expire date"), default=EXPIRE_DATE)
+
+    class Meta:
+        verbose_name = _("History Refresh Token")
+        verbose_name_plural = _("History Refresh Token Managements")
+
+    def __str__(self):
+        return f"{self.store.account.first_name}-{self.store.account.last_name}: refresh token"
+
+    @property
+    def is_expired(self):
+        return datetime.now().timestamp() > self.expire_date.timestamp()
+
+
+EXPIRE_DATE_ACCESS = datetime.now() + settings.TOKEN_LIFE_TIME
+
+
+class HistoryAccessToken(AuditMixin):
+    refresh = models.ForeignKey(HistoryRefreshToken, on_delete=models.CASCADE, related_name="store_access")
+    access_token = models.CharField(_("access token"), max_length=300)
+    expire_date = models.DateTimeField(_("expire date"), default=EXPIRE_DATE_ACCESS)
+
+    class Meta:
+        verbose_name = _("History Refresh Token")
+        verbose_name_plural = _("History Refresh Token Managements")
+
+    def __str__(self):
+        return f"{self.store.account.first_name}-{self.store.account.last_name}: refresh token"
+
+    @property
+    def is_expired(self):
+        return datetime.now().timestamp() > self.expire_date.timestamp()
