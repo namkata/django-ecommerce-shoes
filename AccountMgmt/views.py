@@ -1,5 +1,5 @@
 from AccountMgmt.authentication import AccountAuthentication
-from AccountMgmt.serializers import ShoesTokenObtainPairSerializer
+from AccountMgmt.serializers import ShoesRefreshTokenSerializer, ShoesTokenObtainPairSerializer
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -28,4 +28,4 @@ class ShoesTokenView(TokenObtainPairView):
 class ShoesRefreshToken(TokenRefreshView):
     authentication_classes = [AccountAuthentication]
     permission_classes = [IsAuthenticated]
-    pass
+    serializer_class = ShoesRefreshTokenSerializer

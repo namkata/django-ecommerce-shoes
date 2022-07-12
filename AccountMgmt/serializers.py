@@ -42,9 +42,10 @@ class ShoesTokenObtainPairSerializer(TokenObtainPairSerializer):
         if self.user.phone:
             phone = self.user.phone[:3] + "*" * 5 + self.user.phone[-4:]
 
-        access = HistoryAccessToken.objects.filter(refresh__refresh_token=data["refresh"]).first()
+        refresh = HistoryRefreshToken.objects.get(refresh_token=data["refresh"])
+        access = HistoryAccessToken.objects.filter(refresh=refresh).first()
         if not access:
-            HistoryAccessToken.objects.create(refresh__refresh_token=data["refresh"], access_token=data["access"])
+            access = HistoryAccessToken.objects.create(refresh=refresh, access_token=data["access"])
 
         access.access_token = data["access"]
         access.save()
@@ -60,3 +61,15 @@ class ShoesTokenObtainPairSerializer(TokenObtainPairSerializer):
             },
         }
         return result
+
+
+class ShoesRefreshTokenSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        refresh_token = attrs["refresh"]
+        try:
+            refresh = HistoryRefreshToken.objects.get(refresh_token=refresh_token)
+        except HistoryRefreshToken.DoesNotExist:
+            raise Exception("Refresh Token is incorrect")
+        HistoryAccessToken.objects.filter(refresh=refresh).update(access_token=data["access"])
+        return data
