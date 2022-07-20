@@ -11,12 +11,16 @@ class ShoesTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(self, user):
         param_invocation_id = self.context.get("invocation_id")
         param_gmd_session = self.context.get("gmd_session")
+        param_remote_addr = self.context.get("remote_addr")
         store_sign = StoreLogin.objects.filter(
-            invocation_id=param_invocation_id, gmd_session=param_gmd_session, account_id=self.user.id
+            remote_addr=param_remote_addr, gmd_session=param_gmd_session, account_id=self.user.id
         ).first()
         if not store_sign:
             store_login = StoreLogin.objects.create(
-                invocation_id=param_invocation_id, gmd_session=param_gmd_session, account_id=self.user.id
+                invocation_id=param_invocation_id,
+                remote_addr=param_remote_addr,
+                gmd_session=param_gmd_session,
+                account_id=self.user.id,
             )
             res = super().get_token(user)
             refresh = HistoryRefreshToken.objects.create(store=store_login, refresh_token=res)

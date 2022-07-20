@@ -14,7 +14,11 @@ class ShoesTokenView(TokenObtainPairView):
     def post(self, request: Request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(
             data=request.data,
-            context={"invocation_id": request.META.get("INVOCATION_ID"), "gmd_session": request.META.get("GDMSESSION")},
+            context={
+                "invocation_id": request.META.get("INVOCATION_ID"),
+                "gmd_session": request.META.get("GDMSESSION"),
+                "remote_addr": request.META.get("REMOTE_ADDR"),
+            },
         )
 
         try:

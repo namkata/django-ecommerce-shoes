@@ -8,7 +8,11 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-regex_phone = RegexValidator(r"^(\+\d{1,2}\s?)?1?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$", "Invalid phone number")
+EXPIRE_DATE = datetime.now() + settings.REFRESH_LIFE_TIME
+regex_phone = RegexValidator(
+    r"/^\s*(?:\+?(\d{1,3}))?([-. (]*(\d{3})[-. )]*)?((\d{3})[-. ]*(\d{2,4})(?:[-.x ]*(\d+))?)\s*$/gm",
+    "Invalid phone number",
+)
 
 
 @enum.unique
@@ -114,6 +118,7 @@ class EmploymentContract(AuditMixin):
 class StoreLogin(AuditMixin):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="account_store")
     invocation_id = models.CharField(_("invocation id"), max_length=255)
+    remote_addr = models.CharField(_("remote address"), max_length=255)
     gmd_session = models.CharField(_("GDMSESSION"), max_length=255)
     active = models.BooleanField(_("active"), default=True)
 
@@ -135,9 +140,6 @@ class HistoryPassword(AuditMixin):
 
     def __str__(self):
         return f"{self.account.first_name}-{self.account.last_name}"
-
-
-EXPIRE_DATE = datetime.now() + settings.REFRESH_LIFE_TIME
 
 
 class HistoryRefreshToken(AuditMixin):
@@ -171,3 +173,23 @@ class HistoryAccessToken(AuditMixin):
     @property
     def is_expired(self):
         return datetime.now().timestamp() > self.expire_date.timestamp()
+
+
+class HistorySiginFailedOnDevices(AuditMixin):
+    device = models.ForeignKey(
+        StoreLogin, on_delete=models.CASCADE, related_name="device_failed", verbose_name=_("Device Connected")
+    )
+    num_failed = models.IntegerField(
+        verbose_name=_("Number of Failured"), default=0, validators=[MinValueValidator(0), MaxValueValidator(5)]
+    )
+    active = models.BooleanField(verbose_name=_("Is active"), default=True)
+    is_lock = models.BooleanField(verbose_name=_("Is Locked"), default=False)
+
+    class Meta:
+        verbose_name = _("History Account Sign In Failed")
+        verbose_name_plural = _("List History Account Sign In Failed")
+
+    def save(self, *args, **kwargs):
+        if self.num_failed == 5:
+            self.active = False
+        super().save(*args, **kwargs)
